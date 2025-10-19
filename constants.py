@@ -30,3 +30,6 @@ PAPER_HEIGHT = 11
 
 # Width of the paper in inches [in]
 PAPER_WIDTH = 8.5
+
+# Conversion from inches to meters [m]
+INCHES_2_METERS = 2.54E-2
