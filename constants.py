@@ -14,7 +14,7 @@ DROPLET_DENSITY = 1000
 PRINTER_RESOLUTION = 300
 
 # Distance between the droplet gun and the paper in millimeters [m^-3]
-DROPLET_GUN_DISTANCE = 3E-3
+TOTAL_DISTANCE = 3E-3
 
 # Width of the capacitor in milimeters [m^-3]
 CAPACITOR_WIDTH = 1E-3

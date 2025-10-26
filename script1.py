@@ -1,28 +1,75 @@
-from helpers import calc_time_droplet_2_paper
-import constants
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.patches as patches
 
+# Constants
+DISTANCE = 3E-3         # 3 mm
+CAPACITOR_LENGTH = 1E-3 * 1e3 # 1 mm
+VELOCITY = 20           # m/s
 
-def run_script1():
-    distance = constants.DROPLET_GUN_DISTANCE
-    velocity = constants.DROPLET_VELOCITY
+# Derived values
+travel_time = DISTANCE / VELOCITY
+frames = 100
+time_values = np.linspace(0, travel_time, frames)
 
-    time_droplet_2_paper = calc_time_droplet_2_paper(distance=distance, velocity=velocity)
+# Setup figure
+fig, ax = plt.subplots()
+ax.set_xlim(0, DISTANCE * 1e3)
+ax.set_ylim(-1, 1)
+ax.set_xlabel("Horizontal Distance (mm)")
+ax.set_title("Droplet Motion")
 
-    print(f"Time to reach paper: {time_droplet_2_paper:.2e}s") 
+capacitorTop = patches.Rectangle((1.25, 0.5), CAPACITOR_LENGTH, 0.25,
+                                 color='red', alpha=0.4, label='Top Plate')
+ax.add_patch(capacitorTop)
 
-    t = np.linspace(0, time_droplet_2_paper, 100)
-    x = velocity * t
+capacitorBottom = patches.Rectangle((1.25, -0.75), CAPACITOR_LENGTH, 0.25,
+                                    color='lightblue', alpha=0.4, label='Bottom Plate')
+ax.add_patch(capacitorBottom)
+
+# Moving dot (red)
+(dot,) = ax.plot([], [], 'ro', markersize=10, label='Droplet')
+
+# Line trail (blue)
+(line,) = ax.plot([], [], 'b-', lw=2, label='Trail')
+
+# Static elements
+ax.axhline(0, color='gray', linestyle='--')
+ax.legend()
+
+# Timer text
+timer_text = ax.text(0.8 * DISTANCE * 1e3, 0.6, '', fontsize=12, color='black')
+
+# Initialize animation
+def init():
+    dot.set_data([], [])
+    line.set_data([], [])
+    timer_text.set_text('')
+    return dot, line, timer_text
+
+# Update animation
+def update(frame):
+    # X position in mm
+    x = np.linspace(0, (DISTANCE * 1e3) * (frame / frames), max(1, frame))
+
+    y = np.zeros_like(x)
     
-    t_ms = t * 1e3
-    x_ms = x * 1e3
-
-    plt.plot(t_ms , x_ms)
-    plt.xlabel("Time (ms)")
-    plt.ylabel("Horizontal Position (mm)")
-    plt.title("Droplet Motion without Voltage")
-    plt.show()
+    # Update the trail and the dot
+    line.set_data(x, y)
+    dot.set_data([x[-1]], [0])
     
-if __name__ == "__main__":
-    run_script1()
+    # Update timer
+    t_ms = time_values[frame] * 1e3
+    timer_text.set_text(f"Time: {t_ms:.2f} ms")
+    
+    return dot, line, timer_text
+
+# Animate
+ani = FuncAnimation(
+    fig, update, frames=frames,
+    init_func=init, blit=True,
+    interval=50, repeat=False
+)
+
+plt.show()
