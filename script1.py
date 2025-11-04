@@ -2,44 +2,60 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.patches as patches
+from constants import TOTAL_DISTANCE, CAPACITOR_LENGTH, DROPLET_VELOCITY
+from helpers import convert_mm_to_int
 
 # Constants
-DISTANCE = 3E-3         # 3 mm
-CAPACITOR_LENGTH = 1E-3 * 1e3 # 1 mm
-VELOCITY = 20           # m/s
+DISTANCE = convert_mm_to_int(TOTAL_DISTANCE)
+
+CAPACITOR = {
+    'LENGTH': convert_mm_to_int(CAPACITOR_LENGTH),
+    'WIDTH': 0.25,
+    'X': 1.25,
+    'TOP': {
+        'Y': 0.5
+    },
+    'BOTTOM': {
+        'Y': -0.75
+    },
+}
 
 # Derived values
-travel_time = DISTANCE / VELOCITY
+t_travel = DISTANCE / DROPLET_VELOCITY
 frames = 100
-time_values = np.linspace(0, travel_time, frames)
+time_values = np.linspace(0, t_travel, frames)
 
 # Setup figure
 fig, ax = plt.subplots()
-ax.set_xlim(0, DISTANCE * 1e3)
+ax.set_xlim(0, DISTANCE)
 ax.set_ylim(-1, 1)
 ax.set_xlabel("Horizontal Distance (mm)")
 ax.set_title("Droplet Motion")
 
-capacitorTop = patches.Rectangle((1.25, 0.5), CAPACITOR_LENGTH, 0.25,
-                                 color='red', alpha=0.4, label='Top Plate')
-ax.add_patch(capacitorTop)
+def capacitor(y, color, label): 
+    c = patches.Rectangle(
+        (CAPACITOR['X'], y), 
+        CAPACITOR['LENGTH'], 
+        CAPACITOR['WIDTH'],
+        color=color, 
+        alpha=0.4, 
+        label=label
+    )
+    ax.add_patch(c)
 
-capacitorBottom = patches.Rectangle((1.25, -0.75), CAPACITOR_LENGTH, 0.25,
-                                    color='lightblue', alpha=0.4, label='Bottom Plate')
-ax.add_patch(capacitorBottom)
+capacitor(y=CAPACITOR['TOP']['Y'], color='red', label='Top Plate')
+capacitor(y=CAPACITOR['BOTTOM']['Y'], color='lightblue', label='Bottom Plate')
 
-# Moving dot (red)
-(dot,) = ax.plot([], [], 'ro', markersize=10, label='Droplet')
+# Moving dot
+(dot,) = ax.plot([], [], 'ko', markersize=10, label='Droplet')
 
-# Line trail (blue)
-(line,) = ax.plot([], [], 'b-', lw=2, label='Trail')
+# Line trail
+(line,) = ax.plot([], [], 'k-', lw=2, label='Trail')
 
-# Static elements
-ax.axhline(0, color='gray', linestyle='--')
 ax.legend()
 
 # Timer text
-timer_text = ax.text(0.8 * DISTANCE * 1e3, 0.6, '', fontsize=12, color='black')
+timer_text = ax.text(0.7 * DISTANCE, -.9, '', fontsize=12, color='black')
 
 # Initialize animation
 def init():
@@ -51,25 +67,28 @@ def init():
 # Update animation
 def update(frame):
     # X position in mm
-    x = np.linspace(0, (DISTANCE * 1e3) * (frame / frames), max(1, frame))
-
+    x = np.linspace(0, (DISTANCE) * (frame / frames), max(1, frame))
     y = np.zeros_like(x)
-    
+
     # Update the trail and the dot
     line.set_data(x, y)
     dot.set_data([x[-1]], [0])
-    
+
     # Update timer
-    t_ms = time_values[frame] * 1e3
+    t_ms = convert_mm_to_int(time_values[frame])
     timer_text.set_text(f"Time: {t_ms:.2f} ms")
-    
+
     return dot, line, timer_text
 
 # Animate
 ani = FuncAnimation(
-    fig, update, frames=frames,
-    init_func=init, blit=True,
-    interval=50, repeat=False
+    fig, 
+    update, 
+    frames=frames,
+    init_func=init, 
+    blit=True,
+    interval=50, 
+    repeat=False
 )
 
 plt.show()

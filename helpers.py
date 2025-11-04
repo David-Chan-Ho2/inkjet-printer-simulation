@@ -30,6 +30,9 @@ def calc_mass(density, volume):
 def inches_2_meters(inches):
     return inches * constants.INCHES_2_METERS
 
+def convert_mm_to_int(mm):
+    return mm * 1E3
+
 @dataclass
 class Vector:
     x: float = 0.0
