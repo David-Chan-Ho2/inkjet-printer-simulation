@@ -1,86 +1,73 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import matplotlib.patches as patches
-from constants import TOTAL_DISTANCE, CAPACITOR_LENGTH, DROPLET_VELOCITY
-from helpers import convert_mm_to_int
+import matplotlib.ticker as ticker
+from constants import TOTAL_DISTANCE, DROPLET_VELOCITY, CAPACITOR_WIDTH
+from calculations import L_gun_to_cap 
+from helpers import init_capacitor, mm_formatter 
 
-# Constants
-DISTANCE = convert_mm_to_int(TOTAL_DISTANCE)
-
-CAPACITOR = {
-    'LENGTH': convert_mm_to_int(CAPACITOR_LENGTH),
-    'WIDTH': 0.25,
-    'X': 1.25,
-    'TOP': {
-        'Y': 0.5
-    },
-    'BOTTOM': {
-        'Y': -0.75
-    },
-}
-
-# Derived values
-t_travel = DISTANCE / DROPLET_VELOCITY
+t_travel = TOTAL_DISTANCE / DROPLET_VELOCITY
 frames = 100
 time_values = np.linspace(0, t_travel, frames)
 
-# Setup figure
+# --- Setup Figure ---
 fig, ax = plt.subplots()
-ax.set_xlim(0, DISTANCE)
-ax.set_ylim(-1, 1)
+
+# Set X-axis limit in METERS
+ax.set_xlim(0, TOTAL_DISTANCE * 1.1)
+
+# Set Y-axis limit based on CAPACITOR_WIDTH (in METERS) 
+y_limit_m = (CAPACITOR_WIDTH  / 2) * 2.0 
+ax.set_ylim(-y_limit_m, y_limit_m)
+
+# Use the mm_formatter helper to display axis labels in mm
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(mm_formatter))
+ax.yaxis.set_major_formatter(ticker.FuncFormatter(mm_formatter))
+
 ax.set_xlabel("Horizontal Distance (mm)")
+ax.set_ylabel("Vertical Position (mm)") 
 ax.set_title("Droplet Motion")
+ax.grid(True, linestyle=':', alpha=0.6) 
 
-def capacitor(y, color, label): 
-    c = patches.Rectangle(
-        (CAPACITOR['X'], y), 
-        CAPACITOR['LENGTH'], 
-        CAPACITOR['WIDTH'],
-        color=color, 
-        alpha=0.4, 
-        label=label
-    )
-    ax.add_patch(c)
+# Draw Capacitor Plates
+init_capacitor(ax, L_gun_to_cap)
 
-capacitor(y=CAPACITOR['TOP']['Y'], color='red', label='Top Plate')
-capacitor(y=CAPACITOR['BOTTOM']['Y'], color='lightblue', label='Bottom Plate')
+ax.axvline(x=TOTAL_DISTANCE, color='blue', linestyle='--', linewidth=2, label='Paper Target')
 
 # Moving dot
 (dot,) = ax.plot([], [], 'ko', markersize=10, label='Droplet')
 
-# Line trail
-(line,) = ax.plot([], [], 'k-', lw=2, label='Trail')
+ax.legend(loc='upper right')
 
-ax.legend()
+# Timer text 
+timer_text = ax.text(0.7 * TOTAL_DISTANCE, -y_limit_m * 0.9, '', fontsize=12, color='black')
 
-# Timer text
-timer_text = ax.text(0.7 * DISTANCE, -.9, '', fontsize=12, color='black')
 
-# Initialize animation
+# --- Animation Functions ---
+
 def init():
     dot.set_data([], [])
-    line.set_data([], [])
     timer_text.set_text('')
-    return dot, line, timer_text
+    return dot, timer_text
 
-# Update animation
 def update(frame):
-    # X position in mm
-    x = np.linspace(0, (DISTANCE) * (frame / frames), max(1, frame))
-    y = np.zeros_like(x)
+    # Get current time
+    t_current = time_values[frame]
+    
+    # Generate array of X positions (trail)
+    # The dot's X position is determined by its constant velocity
+    x_current = DROPLET_VELOCITY * np.linspace(0, t_current, max(2, frame))
 
-    # Update the trail and the dot
-    line.set_data(x, y)
-    dot.set_data([x[-1]], [0])
+    # Update the dot (at the end of the trail)
+    dot.set_data([x_current[-1]], [0])
 
-    # Update timer
-    t_ms = convert_mm_to_int(time_values[frame])
+    # Update timer (convert to ms)
+    t_ms = t_current * 1000
     timer_text.set_text(f"Time: {t_ms:.2f} ms")
 
-    return dot, line, timer_text
+    return dot, timer_text
 
-# Animate
+# --- Animate ---
 ani = FuncAnimation(
     fig, 
     update, 
