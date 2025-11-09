@@ -109,6 +109,5 @@ ani = FuncAnimation(
     repeat=False
 )
 
-# Use tight_layout to prevent subplots from overlapping
 plt.tight_layout()
 plt.show()

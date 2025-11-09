@@ -73,6 +73,8 @@ ax2.grid(True, linestyle=':', alpha=0.6)
 # Inkjet Droplet Gun on left plot
 init_gun(ax1)
 
+init_capacitor(ax1, L_gun_to_cap)
+
 # Paper on left plot
 ax1.axvline(x=D, color='blue', linestyle='--', linewidth=2, label='Paper Target')
 ax1.legend(loc='upper right')
