@@ -4,7 +4,7 @@ from matplotlib.patches import Rectangle
 from constants import GUN_X_START, GUN_Y_START, GUN_WIDTH, GUN_HEIGHT, TOTAL_DISTANCE, CAPACITOR_WIDTH, CAPACITOR_LENGTH 
 
 
-# --- 1. Visualization Setup Functions ---
+# Visualization Setup Functions
 def init_gun(ax):
     """Adds the static visual representation of the Inkjet Droplet Gun to the plot."""
     inkjet_gun = Rectangle((GUN_X_START, GUN_Y_START), GUN_WIDTH, GUN_HEIGHT, 
@@ -29,7 +29,7 @@ def init_capacitor(ax, L_gun_to_cap):
 def init_paper(ax):
     ax.axvline(x=TOTAL_DISTANCE, color='blue', linestyle='--', linewidth=2, label='Paper Target')
 
-# --- 2. Kinematics and Physics Calculation Functions ---
+#  Kinematics and Physics Calculation Functions 
 
 def calc_sphere_volume(diameter):
     """Calculates the volume of a sphere given its diameter."""
@@ -56,7 +56,7 @@ def calc_capacitor_voltage(electric_field, width):
     """Calculates required voltage (V = E*d)."""
     return electric_field * width
 
-# --- 3. Time, Distance, and Formatting Utilities ---
+# Time, Distance, and Formatting Utilities
 
 def calc_distance(vel_x, time):
     """Calculates distance traveled (d = v*t)."""
@@ -75,7 +75,7 @@ def convert_mm_to_int(mm):
     return mm * 1E3
 
 
-# --- 4. Data Structures ---
+# Data Structures
 
 @dataclass
 class Vector:

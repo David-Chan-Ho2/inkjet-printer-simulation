@@ -1,7 +1,5 @@
 import numpy as np
 
-# --- 1. SYSTEM AND OPERATIONAL CONSTANTS ---
-
 # Droplet Properties
 DROPLET_DIAMETER = 84E-6        # Diameter of the droplet in meters [m]
 DROPLET_CHARGE = -1.9E-10       # Charge of the droplet in Coulombs [C]
@@ -24,7 +22,7 @@ INCHES_2_METERS = 2.54E-2       # Conversion from inches to meters [m]
 
 # Gun Visualization Geometry
 GUN_WIDTH = 0.2E-3              # Small width for the gun [m]
-GUN_HEIGHT = 1.0E-3             # Height of the gun, centered vertically [m]
+GUN_HEIGHT = 0.5E-3             # Height of the gun, centered vertically [m]
 GUN_X_START = -0.4E-3           # Position slightly before x=0 [m]
 GUN_Y_START = -GUN_HEIGHT / 2   # Starting Y position of the gun [m]
 

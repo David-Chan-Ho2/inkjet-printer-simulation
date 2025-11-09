@@ -1,7 +1,5 @@
 import numpy as np
-from constants import * # Import all constants
-
-# --- 2. DERIVED AND KINEMATIC CONSTANTS ---
+from constants import * 
 
 # Droplet Kinematics
 R = DROPLET_DIAMETER / 2
@@ -23,8 +21,6 @@ N_dots_total = int(PAPER_HEIGHT * PRINTER_RESOLUTION)
 T_total_flight = D / Vx 
 MAX_DROPS_IN_FLIGHT = int(np.ceil(T_total_flight / T_interval)) 
 
-# --- Deflection, Voltage, and Array Preparation ---
-
 # Calculate the deflection constant (K_deflect)
 K_deflect = (1.0 / q_over_m_abs) * (W * Vx**2) / (CAPACITOR_LENGTH * (CAPACITOR_LENGTH/2 + CAPACITOR_DISTANCE))
 
@@ -39,11 +35,10 @@ V_required_full = y_positions * K_deflect * np.sign(DROPLET_CHARGE)
 V_max_practical = np.max(np.abs(V_required_full)) 
 
 # Animation Parameters
-# Note: Using N_dots_total for full simulation
 animation_indices = np.linspace(0, N_dots_total - 1, N_dots_total, dtype=int)
 y_positions_visible = y_positions[animation_indices] 
 
-# Visual Scaling for Y-axis (Using the small 1mm width)
+# Visual Scaling for Y-axis
 y_min_max_visible = (W / 2) * 1.5 
 
 # Final Animation Timing

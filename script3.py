@@ -1,38 +1,59 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from constants import *
 
-T = CAPACITOR_LENGTH / DROPLET_VELOCITY    # Time droplet spends inside capacitor (s)
+# Air breakdown safe limit for 1 mm gap
+V_MAX_SAFE = 3000                 # Volts
 
-# Number of droplets
-N = 12
+# Compute mass of droplet
+R = DROPLET_DIAMETER / 2
+volume = (4/3)*math.pi*R**3
+m = DROPLET_DENSITY * volume
+q = DROPLET_CHARGE
 
-# Voltage applied for each droplet (example staircase pattern)
-# Replace with zeros for drawing letter "I"
-voltages = np.array([0, 4, 8, 4, 0, -4, -8, -4, 0, 4, 0, 0])
+# Compute K_deflect
+W  = CAPACITOR_WIDTH
+L1 = CAPACITOR_LENGTH
+L2 = CAPACITOR_DISTANCE
+Vx = DROPLET_VELOCITY
 
-# -----------------------------
-# Generate staircase timing
-# -----------------------------
-# Time boundaries between droplets
-time_edges = np.arange(N + 1) * T
+q_over_m_abs = abs(q) / m
+K_deflect = (1.0 / q_over_m_abs) * (W * Vx**2) / (L1*(L1/2 + L2))
 
-# -----------------------------
-# Plotting
-# -----------------------------
-plt.figure(figsize=(8, 4))
+# Compute Maximum Printable Height
+y_max = V_MAX_SAFE / K_deflect         # Max deflection one direction (meters)
+height_printable = 2 * y_max           # Total height of letter "I" (meters)
 
-for i in range(N):
-    # Horizontal line for each droplet's voltage
-    plt.hlines(voltages[i], time_edges[i], time_edges[i+1], linewidth=2)
-    
-    # Vertical transition line between steps (except last)
-    if i < N - 1:
-        plt.vlines(time_edges[i+1], voltages[i], voltages[i+1], linewidth=1)
+print("\n===== PRINTABLE SIZE RESULTS =====")
+print(f"Maximum printable full height: {height_printable*1000:.3f} mm")
 
-plt.xlabel("Time (s)", fontsize=12)
-plt.ylabel("Applied Voltage V(t)", fontsize=12)
-plt.title("Staircase Voltage Profile (Per Droplet)", fontsize=14)
-plt.grid(True, alpha=0.3)
+# Make Staircase Voltages
+# printer resolution: ~0.085 mm per dot (300 dpi)
+step_size = 0.085e-3       # m per droplet step
+N = int(height_printable / step_size)
 
+# Target y positions from bottom to top
+y_positions = np.linspace(-y_max, y_max, N)
+
+# Required voltage for each droplet
+V_steps = y_positions * K_deflect * np.sign(q)
+
+# Droplet time spent in capacitor
+T = L1 / Vx
+t_edges = np.arange(N+1) * T
+
+# Plot Staircase V(t)
+plt.figure(figsize=(10,4))
+plt.step(t_edges[:-1], V_steps, where='post')
+plt.xlabel("Time (s)")
+plt.ylabel("Voltage V(t) (Volts)")
+plt.title("Staircase Voltage Profile for Printing Maximum Height 'I' (~6 mm tall)")
+plt.grid(True)
+plt.tight_layout()
 plt.show()
+
+print(f"Max required |V|: {np.max(np.abs(V_steps)):.1f} V (should be ~3000 V)")
+print(f"Total number of droplets: {N}")
+print(f"Time per droplet: {T*1e6:.2f} µs")
+print(f"Total printing time: {N*T*1000:.3f} ms\n")

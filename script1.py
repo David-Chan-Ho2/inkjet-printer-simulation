@@ -10,7 +10,7 @@ t_travel = TOTAL_DISTANCE / DROPLET_VELOCITY
 frames = 100
 time_values = np.linspace(0, t_travel, frames)
 
-# --- Setup Figure ---
+# Setup Figure
 fig, ax = plt.subplots()
 
 # Set X-axis limit in METERS
@@ -43,7 +43,7 @@ ax.legend(loc='upper right')
 timer_text = ax.text(0.7 * TOTAL_DISTANCE, -y_limit_m * 0.9, '', fontsize=12, color='black')
 
 
-# --- Animation Functions ---
+# Animation Functions
 
 def init():
     dot.set_data([], [])
@@ -67,7 +67,7 @@ def update(frame):
 
     return dot, timer_text
 
-# --- Animate ---
+# Animate
 ani = FuncAnimation(
     fig, 
     update, 
@@ -77,5 +77,6 @@ ani = FuncAnimation(
     interval=50, 
     repeat=False
 )
+# ani.save('q1.mp4', writer='ffmpeg', fps=50) 
 
 plt.show()
