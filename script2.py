@@ -6,18 +6,15 @@ import matplotlib.ticker as ticker
 from helpers import *
 from constants import *
 
-# DERIVED AND KINEMATIC CONSTANTS
 R = DROPLET_DIAMETER / 2
 m = DROPLET_DENSITY * (4/3) * np.pi * R**3 
 q_over_m_abs = abs(DROPLET_CHARGE) / m
 
-# Geometric Parameters (in meters)
 L_gun_to_cap = TOTAL_DISTANCE - CAPACITOR_LENGTH - CAPACITOR_DISTANCE
 W = CAPACITOR_WIDTH
 D = TOTAL_DISTANCE
 Vx = DROPLET_VELOCITY
 
-# Optimized Time Parameters (40 kHz)
 T_flight_capacitor = CAPACITOR_LENGTH / Vx
 T_interval = T_flight_capacitor
 N_dots_total = int(PAPER_HEIGHT * PRINTER_RESOLUTION) 
@@ -25,7 +22,6 @@ N_dots_total = int(PAPER_HEIGHT * PRINTER_RESOLUTION)
 T_total_flight = D / Vx 
 MAX_DROPS_IN_FLIGHT = int(np.ceil(T_total_flight / T_interval)) 
 
-# Visible Segment (Animation) Parameters
 paper_height_m = PAPER_HEIGHT * INCHES_2_METERS 
 y_full_max_deflection = paper_height_m / 2
 N_dots_paper = N_dots_total
@@ -40,7 +36,6 @@ V_required_full = y_positions * K_deflect * np.sign(DROPLET_CHARGE)
 
 V_max_practical = np.max(np.abs(V_required_full)) 
 
-# Animation Parameters
 FRAMES_PER_DOT_INTERVAL = 2
 T_last_fire = (N_dots_total - 1) * T_interval
 T_last_land = T_last_fire + T_total_flight
@@ -50,7 +45,6 @@ ANIMATION_SPEED_FACTOR = 50000
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 8))  
 
-# Left subplot: Flight animation
 ax1.set_xlim(-0.5e-3, D + 0.5e-3)
 ax1.set_ylim(-y_full_max_deflection, y_full_max_deflection)
 ax1.xaxis.set_major_formatter(ticker.FuncFormatter(mm_formatter))
@@ -60,47 +54,36 @@ ax1.set_xlabel('Horizontal Distance (mm)')
 ax1.set_ylabel('Vertical Position (mm)')
 ax1.grid(True, linestyle=':', alpha=0.6)
 
-# Right subplot: Paper hit positions
-ax2.set_xlim(-0.1, 0.1)  # Small width to show vertical distribution
 ax2.set_ylim(-y_full_max_deflection, y_full_max_deflection)
 ax2.xaxis.set_major_formatter(ticker.FuncFormatter(mm_formatter))
 ax2.yaxis.set_major_formatter(ticker.FuncFormatter(mm_formatter))
 ax2.set_title('Paper - Hit Positions')
-ax2.set_xlabel('')  # Remove x-axis label for paper plot
 ax2.set_ylabel('Vertical Position (mm)')
 ax2.grid(True, linestyle=':', alpha=0.6)
 
-# Inkjet Droplet Gun on left plot
 init_gun(ax1)
 
 init_capacitor(ax1, L_gun_to_cap)
 
-# Paper on left plot
 ax1.axvline(x=D, color='blue', linestyle='--', linewidth=2, label='Paper Target')
 ax1.legend(loc='upper right')
     
 norm = Normalize(vmin=np.min(V_required_full), vmax=np.max(V_required_full))
 
-# Initialize Plot Objects for LEFT PLOT (flight)
 all_flying_droplets = ax1.scatter([], [], s=30, zorder=5, label='Flying Droplets')
 saved_dots_flight, = ax1.plot([], [], 'o', color='black', markersize=6, alpha=1.0, label='Landed Dots')
 
-# Initialize Plot Objects for RIGHT PLOT (paper hits)
 paper_dots, = ax2.plot([], [], 'o', color='red', markersize=4, alpha=0.7, label='Hit Positions')
 
-# Text elements
 time_text = ax1.text(0.02, 0.98, '', transform=ax1.transAxes)
 droplet_index_text = ax1.text(0.02, 0.94, '', transform=ax1.transAxes)
 hit_info_text = ax1.text(0.02, 0.02, '', color='red', fontsize=10, 
                         ha='left', va='bottom', transform=ax1.transAxes)
 
-# Progress text for paper plot
 paper_progress_text = ax2.text(0.02, 0.98, '', transform=ax2.transAxes, fontsize=12)
 
-# Store hit positions globally
 hit_positions_y = []
 
-# Animation Functions
 def calculate_position(idx, t_flight):
     V = V_required_full[idx] 
     a_y = (DROPLET_CHARGE / m) * (V / W)
@@ -162,7 +145,6 @@ def animate(frame):
     else:
         all_flying_droplets.set_offsets(np.empty((0, 2)))
 
-    # Hit detection and paper plot update
     hit_check_index = int(np.floor((t_global - T_total_flight) / T_interval))
     
     if hit_check_index >= 0 and hit_check_index < N_dots_total:
@@ -174,12 +156,10 @@ def animate(frame):
             if hit_check_index in animation_indices:
                 y_target = y_positions[hit_check_index]
                 
-                # Update flight plot
                 hit_x = np.append(saved_dots_flight.get_xdata(), D)
                 hit_y = np.append(saved_dots_flight.get_ydata(), y_target)
                 saved_dots_flight.set_data(hit_x, hit_y)
                 
-                # Update paper plot - store hit position
                 hit_positions_y.append(y_target)
                 paper_dots.set_data(np.zeros(len(hit_positions_y)), hit_positions_y)
                 
@@ -209,7 +189,6 @@ def animate(frame):
 
     return all_flying_droplets, saved_dots_flight, paper_dots, time_text, droplet_index_text, hit_info_text, paper_progress_text
 
-# Create and Display the Animation
 interval_ms = (GLOBAL_TIME_STEP * 1000) / ANIMATION_SPEED_FACTOR
 
 print(f"Total theoretical simulation time: {T_last_land*1000:.3f} ms")
