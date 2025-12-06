@@ -192,7 +192,6 @@ def animate(frame):
 interval_ms = (GLOBAL_TIME_STEP * 1000) / ANIMATION_SPEED_FACTOR
 
 print(f"Total theoretical simulation time: {T_last_land*1000:.3f} ms")
-print(f"Total animation frames: {TOTAL_ANIMATION_FRAMES}")
 
 ani = animation.FuncAnimation(
     fig, animate, init_func=init, 
@@ -202,5 +201,6 @@ ani = animation.FuncAnimation(
     repeat=False
 )
 
+ani.save('q2.mp4', writer='ffmpeg', fps=50) 
 plt.tight_layout()
 plt.show()
